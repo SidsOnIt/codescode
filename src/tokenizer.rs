@@ -15,6 +15,17 @@ pub enum CodeToken {
     #[regex(r"\r?\n")] // Matches carriage returns and newlines
     Newline,
 
+    // --- NEW: Strings & Interpolation ---
+    #[regex(r#""([^"\\]|\\.)*""#)] // Matches double-quoted strings
+    #[regex(r#"'([^'\\]|\\.)*'"#)] // Matches single-quoted strings
+    #[regex(r#"`([^`\\]|\\.)*`"#)] // Matches backtick template literals
+    StringLiteral,
+
+    #[regex(r#"\$[a-zA-Z_][a-zA-Z0-9_]*"#)] // Matches variable interpolation like $var or $name
+    #[regex(r#"#\{[^}]+\}"#)]               // Matches block interpolation like #{expression}
+    Interpolation,
+    // ------------------------------------
+
     #[regex("[A-Z][a-zA-Z0-9_]*")] // Matches capitalized PascalCase names, structs, and types
     Structure,
 
@@ -166,6 +177,7 @@ pub enum CodeToken {
     Array,
 
     #[token(",")] // Matches structural item separator commas
+    #[token(";")] // Matches statement terminator semicolons
     Separator,
 }
 
