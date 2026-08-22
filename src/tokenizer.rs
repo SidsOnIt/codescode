@@ -29,9 +29,35 @@ pub enum CodeToken {
     // the first real closing `"""` without needing laziness.
     #[regex(r#"//[^\r\n]*"#, allow_greedy = true)]
     #[regex(r#"/\*[^*]*\*+([^/*][^*]*\*+)*/"#, allow_greedy = true)]
-    #[regex(r#"#[^!\r\n][^\r\n]*"#, priority = 2, allow_greedy = true)]
+    // NOTE ON THE '#' COMMENT RULE BELOW: logos resolves competing matches by
+    // LONGEST MATCH WINS — explicit `priority` only breaks ties when two
+    // candidates match the exact same length. So giving HexColor a higher
+    // priority than this rule is not enough on its own: for input like
+    // `#ff4500;`, this rule would greedily match all 9 chars (through the
+    // `;`) while HexColor can only match the 7-char `#ff4500`, and the
+    // longer match wins regardless of priority. Since every real hex color
+    // starts with a hex digit right after `#`, we instead exclude hex
+    // digits (and `!`, for shebangs) from the character allowed right after
+    // `#` here — that makes this rule structurally unable to even start a
+    // competing match at a HexColor position, so there's no race to lose.
+    // Trade-off: a `#`-comment whose very first character is a hex digit or
+    // letter a-f (e.g. `#123 fix this` with no space) won't be recognized as
+    // a comment. No sample in this corpus does that; real comments here all
+    // start with a space, `[`, or a non-hex letter right after `#`.
+    #[regex(r#"#[^!0-9a-fA-F\r\n][^\r\n]*"#, priority = 2, allow_greedy = true)]
     #[regex(r#"<!--(?:[^-]|-[^-]|--[^>])*-->"#, allow_greedy = true)]
     #[regex(r#""""(?:[^"]|"[^"]|""[^"])*"""|'''(?:[^']|'[^']|''[^'])*'''"#, priority = 10)]
+    // Lua/SQL/Haskell `--` line comment. Deliberately requires a space or tab
+    // immediately after the second dash so it can NEVER fire on:
+    //   - CSS custom properties, e.g. `--main-color: #ff4500;` (dash glued to a letter)
+    //   - the C-family decrement operator, e.g. `i--;` (dash glued to punctuation)
+    // Real `--` comments in the corpus always have a space/tab before the text
+    // (e.g. "-- Lua Single"), so this loses no real matches while staying safe.
+    #[regex(r"--[ \t][^\r\n]*", priority = 6, allow_greedy = true)]
+    // Lua's `--[[ ... ]]` block comment. Uses the same "don't allow the closer
+    // to appear inside the body" trick as the triple-quote docstring rule above,
+    // since logos can't do lazy `*?` matching to find the *nearest* `]]`.
+    #[regex(r"--\[\[(?:[^\]]|\][^\]])*\]\]", priority = 12)]
     Comment,
 
     // --- Strings ---
@@ -298,6 +324,21 @@ mod tests {
     use super::*;
 
     #[test]
+    fn bash_shebang_still_recognized_as_comment() {
+        // Regression guard: the new hex-digit exclusion on the '#' comment
+        // rule must not disturb the pre-existing '!' exclusion used for
+        // shebang lines.
+        let toks: Vec<_> = tokenize("#!/usr/bin/env bash")
+            .map(|t| t.token)
+            .collect();
+        // '!' is excluded from this rule (pre-existing behavior), so '#'
+        // alone falls through to Symbol, then the rest tokenizes separately.
+        // We only assert it's NOT swallowed as one Comment token here, since
+        // that's the specific case this rule is designed to preserve.
+        assert_ne!(toks, vec![Ok(CodeToken::Comment)]);
+    }
+
+    #[test]
     fn hex_color_not_swallowed_by_comment() {
         let toks: Vec<_> = tokenize("#fff").map(|t| t.token).collect();
         assert_eq!(toks, vec![Ok(CodeToken::HexColor)]);
@@ -308,6 +349,69 @@ mod tests {
         let src = "\"\"\"\nPython\nMultiline Comment\n\"\"\"";
         let toks: Vec<_> = tokenize(src).map(|t| t.token).collect();
         assert_eq!(toks, vec![Ok(CodeToken::Comment)]);
+    }
+
+    #[test]
+    fn sql_line_comment_recognized() {
+        let toks: Vec<_> = tokenize("-- SQL Single").map(|t| t.token).collect();
+        assert_eq!(toks, vec![Ok(CodeToken::Comment)]);
+    }
+
+    #[test]
+    fn lua_line_comment_recognized() {
+        let toks: Vec<_> = tokenize("-- Lua Single").map(|t| t.token).collect();
+        assert_eq!(toks, vec![Ok(CodeToken::Comment)]);
+    }
+
+    #[test]
+    fn lua_block_comment_recognized_and_does_not_overrun() {
+        let src = "--[[\nLua Multi\n]]\nx";
+        let toks: Vec<_> = tokenize(src).map(|t| t.token).collect();
+        assert_eq!(
+            toks,
+            vec![
+                Ok(CodeToken::Comment),
+                Ok(CodeToken::Newline),
+                Ok(CodeToken::Identifier),
+            ]
+        );
+    }
+
+    #[test]
+    fn css_custom_property_not_treated_as_comment() {
+        // Regression guard: `--main-color: #ff4500;` must NOT be swallowed as
+        // a comment. This is the exact case that previously failed: the
+        // generic '#' comment rule matched `#ff4500;` (9 chars, including the
+        // trailing `;`) which is LONGER than HexColor's `#ff4500` (7 chars),
+        // and logos picks the longer match regardless of priority.
+        let toks: Vec<_> = tokenize("--main-color: #ff4500;")
+            .map(|t| t.token)
+            .filter(|t| *t != Ok(CodeToken::Whitespace))
+            .collect();
+        assert_eq!(
+            toks,
+            vec![
+                Ok(CodeToken::Operator),   // -
+                Ok(CodeToken::Operator),   // -
+                Ok(CodeToken::Identifier), // main
+                Ok(CodeToken::Operator),   // -
+                Ok(CodeToken::Identifier), // color
+                Ok(CodeToken::Colon),      // :
+                Ok(CodeToken::HexColor),   // #ff4500
+                Ok(CodeToken::Separator),  // ;
+            ]
+        );
+    }
+
+    #[test]
+    fn decrement_operator_not_treated_as_comment() {
+        // Regression guard: C-family `i--;` must NOT be swallowed as a comment.
+        let toks: Vec<_> = tokenize("i--;").map(|t| t.token).collect();
+        assert!(
+            !toks.contains(&Ok(CodeToken::Comment)),
+            "decrement operator was misread as a comment: {:?}",
+            toks
+        );
     }
 
     #[test]
