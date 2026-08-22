@@ -16,17 +16,17 @@ pub enum CodeToken {
     #[regex(r"\r?\n")]
     Newline,
 
+    // --- Hex Colors (must win over generic '#' comment/interpolation rules) ---
+    #[regex(r"#[0-9a-fA-F]{3}(?:[0-9a-fA-F]{3})?", priority = 20)]
+    HexColor,
+
     // --- Comments & Multi-line Docstrings (Forced High Priority) ---
     #[regex(r#"//[^\r\n]*"#, allow_greedy = true)]
     #[regex(r#"/\*[^*]*\*+([^/*][^*]*\*+)*/"#, allow_greedy = true)]
-    #[regex(r#"#[^!\r\n][^\r\n]*"#, allow_greedy = true)]
+    #[regex(r#"#[^!\r\n][^\r\n]*"#, priority = 2, allow_greedy = true)]
     #[regex(r#"<!--(?:[^-]|-[^-]|--[^>])*-->"#, allow_greedy = true)]
-    #[regex(r#"""""[\s\S]*?"""|'''[\s\S]*?'''"#, priority = 5)]
+    #[regex(r#""""[\s\S]*?"""|'''[\s\S]*?'''"#, priority = 10)]
     Comment,
-
-    // --- Hex Colors (Explicit Priority over Symbols/Identifiers) ---
-    #[regex(r"#[0-9a-fA-F]{3}(?:[0-9a-fA-F]{3})?", priority = 3)]
-    HexColor,
 
     // --- Strings & Interpolation ---
     #[regex(r#""([^"\\\n]|\\.)*""#)]
@@ -35,7 +35,7 @@ pub enum CodeToken {
     StringLiteral,
 
     #[regex(r#"\$[a-zA-Z_][a-zA-Z0-9_]*"#)]
-    #[regex(r#"#\{[^}]+\}"#)]
+    #[regex(r#"#\{[^}]+\}"#, priority = 15)]
     Interpolation,
 
     // --- Structural Declarations & Names ---
@@ -289,4 +289,22 @@ pub fn tokenize(source: &str) -> impl Iterator<Item = TokenMatch<'_>> {
             token,
             slice: &source[span],
         })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn hex_color_not_swallowed_by_comment() {
+        let toks: Vec<_> = tokenize("#fff").map(|t| t.token).collect();
+        assert_eq!(toks, vec![Ok(CodeToken::HexColor)]);
+    }
+
+    #[test]
+    fn triple_quote_docstring_is_one_comment() {
+        let src = "\"\"\"\nPython\nMultiline Comment\n\"\"\"";
+        let toks: Vec<_> = tokenize(src).map(|t| t.token).collect();
+        assert_eq!(toks, vec![Ok(CodeToken::Comment)]);
+    }
 }
