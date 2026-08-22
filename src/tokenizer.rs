@@ -15,11 +15,11 @@ pub enum CodeToken {
     #[regex(r"\r?\n")] // Matches carriage returns and newlines
     Newline,
 
-    // --- Comments (Including Python Triple-Quotes & HTML) ---
+    // --- Comments (Including Python Triple-Quotes & Strict HTML) ---
     #[regex(r#"//[^\r\n]*"#, allow_greedy = true)]
     #[regex(r#"/\*[^*]*\*+([^/*][^*]*\*+)*/"#, allow_greedy = true)]
     #[regex(r#"#[^!\r\n][^\r\n]*"#, allow_greedy = true)]
-    #[regex(r#"<!--[\s\S]*?-->"#, allow_greedy = true)]
+    #[regex(r#"<!--(?:[^-]|-[^-]|--[^>])*-->"#, allow_greedy = true)]
     #[regex(r#"""""[\s\S]*?"""|'''[\s\S]*?'''"#, allow_greedy = true)]
     Comment,
 
@@ -236,7 +236,9 @@ pub enum CodeToken {
     #[token("pass")]
     Loop,
 
-    #[token(":")] // Matches type annotation colons
+    #[token(":")] // Matches type annotation colons independently
+    Colon,
+
     #[token("=>")] // Matches mapping arrow tokens
     #[token("->")] // Matches return type arrow tokens
     #[token("as")] // Matches type casting clauses
