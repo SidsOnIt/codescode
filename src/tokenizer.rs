@@ -19,6 +19,7 @@ pub enum CodeToken {
     #[regex(r#"//[^\r\n]*"#, allow_greedy = true)]
     #[regex(r#"/\*[^*]*\*+([^/*][^*]*\*+)*/"#, allow_greedy = true)]
     #[regex(r#"#[^!\r\n][^\r\n]*"#, allow_greedy = true)]
+    #[regex(r#"<!--[^-]*(-[^-]+)*-->"#, allow_greedy = true)] // HTML comments
     Comment,
 
     // --- Strings & Interpolation ---
@@ -42,6 +43,10 @@ pub enum CodeToken {
     #[token("record")]
     #[token("protocol")]
     #[token("impl")]
+    #[token("defprotocol")]
+    #[token("defmodule")]
+    #[token("defstruct")]
+    #[token("dataclass")]
     #[regex("[A-Z][a-zA-Z0-9_]*")] // Matches capitalized PascalCase names, structs, and types
     Structure,
 
@@ -64,23 +69,54 @@ pub enum CodeToken {
     #[token("undefined")] // Matches undefined type values
     Void,
 
-    #[token("select")] // Matches database SELECT verbs
-    #[token("insert")] // Matches database INSERT verbs
-    #[token("update")] // Matches database UPDATE verbs
-    #[token("delete")] // Matches database DELETE verbs
-    #[token("create")] // Matches database CREATE verbs
-    #[token("alter")] // Matches database ALTER verbs
-    #[token("drop")] // Matches database DROP verbs
-    #[token("trunicate")] // Matches truncation command verbs
-    #[token("concatenate")] // Matches string or stream concatenation verbs
-    #[token("commit")] // Matches transaction commit verbs
-    #[token("rollback")] // Matches transaction rollback verbs
-    #[token("get")] // Matches HTTP GET verbs
-    #[token("post")] // Matches HTTP POST verbs
-    #[token("put")] // Matches HTTP PUT verbs
-    #[token("patch")] // Matches HTTP PATCH verbs
-    #[token("head")] // Matches HTTP HEAD verbs
+    // --- Database & Protocol Verbs ---
+    #[token("select")]
+    #[token("insert")]
+    #[token("update")]
+    #[token("delete")]
+    #[token("create")]
+    #[token("alter")]
+    #[token("drop")]
+    #[token("truncate")]
+    #[token("concatenate")]
+    #[token("commit")]
+    #[token("rollback")]
+    #[token("get")]
+    #[token("post")]
+    #[token("put")]
+    #[token("patch")]
+    #[token("head")]
     Verb,
+
+    // --- General Actions & I/O ---
+    #[token("print")]
+    #[token("println")]
+    #[token("echo")]
+    #[token("log")]
+    Action,
+
+    // --- Concurrency & Asynchrony ---
+    #[token("async")]
+    #[token("await")]
+    #[token("suspend")]
+    #[token("go")]
+    #[token("defer")]
+    #[token("spawn")]
+    Async,
+
+    // --- Error Handling & Exceptions ---
+    #[token("try")]
+    #[token("catch")]
+    #[token("except")]
+    #[token("rescue")]
+    #[token("finally")]
+    #[token("ensure")]
+    #[token("throw")]
+    #[token("throws")]
+    #[token("raise")]
+    #[token("rethrow")]
+    #[token("reraise")]
+    Exception,
 
     #[token("import")] // Matches import statements
     #[token("include")] // Matches file or header inclusion
@@ -103,14 +139,21 @@ pub enum CodeToken {
     #[token("return")] // Matches return execution control
     Function,
 
-    #[token("let")] // Matches immutable variable bindings
-    #[token("mut")] // Matches mutable bindings
-    #[token("pub")] // Matches public visibility modifiers
-    #[token("var")] // Matches variable declarations
-    #[token("val")] // Matches immutable value declarations
-    #[token("local")] // Matches local variable scopes
-    #[token("private")] // Matches private access modifiers
-    #[token("protected")] // Matches protected access modifiers
+    #[token("let")]
+    #[token("mut")]
+    #[token("pub")]
+    #[token("var")]
+    #[token("val")]
+    #[token("local")]
+    #[token("private")]
+    #[token("protected")]
+    #[token("final")]
+    #[token("abstract")]
+    #[token("virtual")]
+    #[token("override")]
+    #[token("comptime")]
+    #[token("factory")]
+    #[token("data")]
     Declaration,
 
     #[regex("[0-9]+")] // Matches numeric digit literals
@@ -126,13 +169,32 @@ pub enum CodeToken {
     #[token("**")] // Matches exponentiation operators
     Operator,
 
-    #[token("where")] // Matches query condition filters
-    #[token("join")] // Matches table join clauses
-    #[token("on")] // Matches relation conditions for joins
-    #[token("group")] // Matches grouping clauses
-    #[token("order")] // Matches sorting order clauses
-    #[token("having")] // Matches filtered grouping clauses
-    #[token("limit")] // Matches pagination limit clauses
+    // --- Conditions & Control Flow ---
+    #[token("where")]
+    #[token("join")]
+    #[token("on")]
+    #[token("group")]
+    #[token("order")]
+    #[token("having")]
+    #[token("limit")]
+    #[token("if")]
+    #[token("else")]
+    #[token("elif")]
+    #[token("elsif")]
+    #[token("switch")]
+    #[token("case")]
+    #[token("match")]
+    #[token("default")]
+    #[token("then")]
+    #[token("guard")]
+    #[token("with")]
+    #[token("begin")]
+    #[token("end")]
+    #[token("by")]
+    #[token("desc")]
+    #[token("asc")]
+    #[token("over")]
+    #[token("partition")]
     Condition,
 
     #[token("==")] // Matches equality comparison operators
@@ -158,14 +220,18 @@ pub enum CodeToken {
     #[token("and")] // Matches word-form logical AND operators
     Concatenator,
 
-    #[token("while")] // Matches while loop controls
-    #[token("for")] // Matches for loop iterations
-    #[token("loop")] // Matches infinite loop constructs
-    #[token("repeat")] // Matches repeat-until loop blocks
-    #[token("do")] // Matches do-while loop constructs
-    #[token("break")] // Matches loop break statements
-    #[token("continue")] // Matches loop continue statements
-    #[token("yield")] // Matches generator yield controls
+    #[token("while")]
+    #[token("for")]
+    #[token("foreach")]
+    #[token("loop")]
+    #[token("repeat")]
+    #[token("until")]
+    #[token("do")]
+    #[token("break")]
+    #[token("continue")]
+    #[token("next")]
+    #[token("yield")]
+    #[token("pass")]
     Loop,
 
     #[token(":")] // Matches type annotation colons
