@@ -9,175 +9,188 @@ use serde::{Serialize, Deserialize};
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
 pub enum CodeToken {
-    #[regex(r"[ \t]+")] // Matches whitespace and horizontal tabs
+    #[regex(r"[ \t]+")]
     Whitespace,
 
-    #[regex(r"\r?\n")] // Matches carriage returns and newlines
+    #[regex(r"\r?\n")]
     Newline,
 
-    // --- NEW: Strings & Interpolation ---
-    #[regex(r#""([^"\\]|\\.)*""#)] // Matches double-quoted strings
-    #[regex(r#"'([^'\\]|\\.)*'"#)] // Matches single-quoted strings
-    #[regex(r#"`([^`\\]|\\.)*`"#)] // Matches backtick template literals
+    // --- Comments (Using explicit allow_greedy for Logos compliance) ---
+    #[regex(r#"//[^\r\n]*"#, allow_greedy = true)]
+    #[regex(r#"/\*[^*]*\*+([^/*][^*]*\*+)*/"#, allow_greedy = true)]
+    #[regex(r#"#[^!\r\n][^\r\n]*"#, allow_greedy = true)]
+    Comment,
+
+    // --- Strings & Interpolation ---
+    #[regex(r#""([^"\\]|\\.)*""#)]
+    #[regex(r#"'([^'\\]|\\.)*'"#)]
+    #[regex(r#"`([^`\\]|\\.)*`"#)]
     StringLiteral,
 
-    #[regex(r#"\$[a-zA-Z_][a-zA-Z0-9_]*"#)] // Matches variable interpolation like $var or $name
-    #[regex(r#"#\{[^}]+\}"#)]               // Matches block interpolation like #{expression}
+    #[regex(r#"\$[a-zA-Z_][a-zA-Z0-9_]*"#)]
+    #[regex(r#"#\{[^}]+\}"#)]
     Interpolation,
-    // ------------------------------------
 
-    #[regex("[A-Z][a-zA-Z0-9_]*")] // Matches capitalized PascalCase names, structs, and types
+    #[regex("[A-Z][a-zA-Z0-9_]*")]
     Structure,
 
-    #[regex("[a-z_][a-zA-Z0-9_]*")] // Matches lowercase identifiers and variable names
+    #[regex("[a-z_][a-zA-Z0-9_]*")]
     Identifier,
 
-    #[token("const")] // Matches constant declarations
-    #[token("static")] // Matches static variable declarations
-    #[regex("[A-Z][A-Z0-9_]+")] // Matches SCREAMING_SNAKE_CASE constant patterns
+    #[token("const")]
+    #[token("static")]
+    #[regex("[A-Z][A-Z0-9_]+")]
     Const,
 
-    #[token("true")] // Matches boolean true literal
-    #[token("false")] // Matches boolean false literal
+    #[token("true")]
+    #[token("false")]
     Boolean,
 
-    #[token("null")] // Matches null values
-    #[token("nil")] // Matches nil pointer/value indicators
-    #[token("none")] // Matches none values
-    #[token("void")] // Matches void return types
-    #[token("undefined")] // Matches undefined type values
+    #[token("null")]
+    #[token("nil")]
+    #[token("none")]
+    #[token("void")]
+    #[token("undefined")]
     Void,
 
-    #[token("select")] // Matches database SELECT verbs
-    #[token("insert")] // Matches database INSERT verbs
-    #[token("update")] // Matches database UPDATE verbs
-    #[token("delete")] // Matches database DELETE verbs
-    #[token("create")] // Matches database CREATE verbs
-    #[token("alter")] // Matches database ALTER verbs
-    #[token("drop")] // Matches database DROP verbs
-    #[token("trunicate")] // Matches truncation command verbs
-    #[token("concatenate")] // Matches string or stream concatenation verbs
-    #[token("commit")] // Matches transaction commit verbs
-    #[token("rollback")] // Matches transaction rollback verbs
-    #[token("get")] // Matches HTTP GET verbs
-    #[token("post")] // Matches HTTP POST verbs
-    #[token("put")] // Matches HTTP PUT verbs
-    #[token("patch")] // Matches HTTP PATCH verbs
-    #[token("head")] // Matches HTTP HEAD verbs
+    #[token("select")]
+    #[token("insert")]
+    #[token("update")]
+    #[token("delete")]
+    #[token("create")]
+    #[token("alter")]
+    #[token("drop")]
+    #[token("trunicate")]
+    #[token("concatenate")]
+    #[token("commit")]
+    #[token("rollback")]
+    #[token("get")]
+    #[token("post")]
+    #[token("put")]
+    #[token("patch")]
+    #[token("head")]
     Verb,
 
-    #[token("import")] // Matches import statements
-    #[token("include")] // Matches file or header inclusion
-    #[token("require")] // Matches module requirement loading
-    #[token("use")] // Matches namespace usage declarations
-    #[token("mod")] // Matches inline or external module declarations
-    #[token("crate")] // Matches crate root references
-    #[token("extern")] // Matches external linkage declarations
-    #[token("package")] // Matches package declarations
-    #[token("namespace")] // Matches namespace scoping blocks
-    #[token("using")] // Matches namespace alias provisions
-    #[token("from")] // Matches source routing for imports
-    #[token("export")] // Matches module exports
+    #[token("import")]
+    #[token("include")]
+    #[token("require")]
+    #[token("use")]
+    #[token("mod")]
+    #[token("crate")]
+    #[token("extern")]
+    #[token("package")]
+    #[token("namespace")]
+    #[token("using")]
+    #[token("from")]
+    #[token("export")]
     Import,
 
-    #[token("fn")] // Matches Rust-style function declarations
-    #[token("func")] // Matches general function declarations
-    #[token("function")] // Matches full function keyword declarations
-    #[token("def")] // Matches Python-style function definitions
-    #[token("return")] // Matches return execution control
+    #[token("fn")]
+    #[token("func")]
+    #[token("function")]
+    #[token("def")]
+    #[token("return")]
     Function,
 
-    #[token("let")] // Matches immutable variable bindings
-    #[token("mut")] // Matches mutable bindings
-    #[token("pub")] // Matches public visibility modifiers
-    #[token("var")] // Matches variable declarations
-    #[token("val")] // Matches immutable value declarations
-    #[token("local")] // Matches local variable scopes
-    #[token("private")] // Matches private access modifiers
-    #[token("protected")] // Matches protected access modifiers
+    #[token("let")]
+    #[token("mut")]
+    #[token("pub")]
+    #[token("var")]
+    #[token("val")]
+    #[token("local")]
+    #[token("private")]
+    #[token("protected")]
     Declaration,
 
-    #[regex("[0-9]+")] // Matches numeric digit literals
+    #[regex("[0-9]+")]
     Number,
 
-    #[token("=")] // Matches standard assignment operators
-    #[token("+")] // Matches addition arithmetic operators
-    #[token("-")] // Matches subtraction arithmetic operators
-    #[token("*")] // Matches multiplication arithmetic operators
-    #[token("/")] // Matches division arithmetic operators
-    #[token("%")] // Matches modulo remainder operators
-    #[token("^")] // Matches bitwise XOR or power operators
-    #[token("**")] // Matches exponentiation operators
+    #[token("=")]
+    #[token("+")]
+    #[token("-")]
+    #[token("*")]
+    #[token("/")]
+    #[token("%")]
+    #[token("^")]
+    #[token("**")]
     Operator,
 
-    #[token("where")] // Matches query condition filters
-    #[token("join")] // Matches table join clauses
-    #[token("on")] // Matches relation conditions for joins
-    #[token("group")] // Matches grouping clauses
-    #[token("order")] // Matches sorting order clauses
-    #[token("having")] // Matches filtered grouping clauses
-    #[token("limit")] // Matches pagination limit clauses
+    #[token("where")]
+    #[token("join")]
+    #[token("on")]
+    #[token("group")]
+    #[token("order")]
+    #[token("having")]
+    #[token("limit")]
     Condition,
 
-    #[token("==")] // Matches equality comparison operators
-    #[token("!=")] // Matches inequality comparison operators
-    #[token(">")] // Matches greater-than operators
-    #[token("<")] // Matches less-than operators
-    #[token(">=")] // Matches greater-than-or-equal operators
-    #[token("<=")] // Matches less-than-or-equal operators
-    #[token("not")] // Matches logical negation operators
-    #[token("in")] // Matches collection membership operators
-    #[token("like")] // Matches pattern matching operators
-    #[token("is null")] // Matches null evaluation checks
+    #[token("==")]
+    #[token("!=")]
+    #[token(">")]
+    #[token("<")]
+    #[token(">=")]
+    #[token("<=")]
+    #[token("not")]
+    #[token("in")]
+    #[token("like")]
+    #[token("is null")]
     Comparitor,
 
-    #[token("|")] // Matches bitwise OR operators
-    #[token("&")] // Matches bitwise AND operators
-    #[token("~")] // Matches bitwise NOT operators
-    #[token("||")] // Matches logical OR boolean operators
-    #[token("&&")] // Matches logical AND boolean operators
-    #[token("??")] // Matches nullish coalescing operators
-    #[token("?.")] // Matches optional chaining operators
-    #[token("or")] // Matches word-form logical OR operators
-    #[token("and")] // Matches word-form logical AND operators
+    #[token("|")]
+    #[token("&")]
+    #[token("~")]
+    #[token("||")]
+    #[token("&&")]
+    #[token("??")]
+    #[token("?.")]
+    #[token("or")]
+    #[token("and")]
     Concatenator,
 
-    #[token("while")] // Matches while loop controls
-    #[token("for")] // Matches for loop iterations
-    #[token("loop")] // Matches infinite loop constructs
-    #[token("repeat")] // Matches repeat-until loop blocks
-    #[token("do")] // Matches do-while loop constructs
-    #[token("break")] // Matches loop break statements
-    #[token("continue")] // Matches loop continue statements
-    #[token("yield")] // Matches generator yield controls
+    #[token("while")]
+    #[token("for")]
+    #[token("loop")]
+    #[token("repeat")]
+    #[token("do")]
+    #[token("break")]
+    #[token("continue")]
+    #[token("yield")]
     Loop,
 
-    #[token(":")] // Matches type annotation colons
-    #[token("=>")] // Matches mapping arrow tokens
-    #[token("as")] // Matches type casting clauses
-    #[token("alias")] // Matches custom namespace or type aliases
+    #[token(":")]
+    #[token("=>")]
+    #[token("->")]
+    #[token("as")]
+    #[token("alias")]
     Assignment,
 
-    #[token(".")] // Matches member access dots
-    #[token("..")] // Matches Dart cascade operators
-    #[token("?..")] // Matches Dart null-aware cascade operators
-    #[token("::")] // Matches namespacing scope resolution operators
-    #[token("<<")] // Matches bitwise shift left or stream push operators
-    #[token(">>")] // Matches bitwise shift right or stream pull operators
-    #[token("(")] // Matches opening call parentheses
-    #[token(")")] // Matches closing call parentheses
+    #[token(".")]
+    #[token("..")]
+    #[token("?..")]
+    #[token("::")]
+    #[token("<<")]
+    #[token(">>")]
+    #[token("(")]
+    #[token(")")]
     Call,
 
-    #[token("}")] // Matches closing map block delimiters
-    #[token("{")] // Matches opening map block delimiters
+    #[token("}")]
+    #[token("{")]
     Map,
 
-    #[token("[")] // Matches opening array collection brackets
-    #[token("]")] // Matches closing array collection brackets
+    #[token("[")]
+    #[token("]")]
     Array,
 
-    #[token(",")] // Matches structural item separator commas
-    #[token(";")] // Matches statement terminator semicolons
+    #[token("@")]
+    #[token("!")]
+    #[token("?")]
+    #[token("$")]
+    #[token("#")]
+    Symbol,
+
+    #[token(",")]
+    #[token(";")]
     Separator,
 }
 
