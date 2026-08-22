@@ -15,16 +15,19 @@ pub enum CodeToken {
     #[regex(r"\r?\n")] // Matches carriage returns and newlines
     Newline,
 
-    // --- Comments (Including Python Triple-Quotes & Strict HTML) ---
+    // --- Comments (Fixed Python & Elixir Triple-Quotes, Strict HTML) ---
     #[regex(r#"//[^\r\n]*"#, allow_greedy = true)]
     #[regex(r#"/\*[^*]*\*+([^/*][^*]*\*+)*/"#, allow_greedy = true)]
     #[regex(r#"#[^!\r\n][^\r\n]*"#, allow_greedy = true)]
     #[regex(r#"<!--(?:[^-]|-[^-]|--[^>])*-->"#, allow_greedy = true)]
-    #[regex(r#"""""[\s\S]*?"""|'''[\s\S]*?'''"#, allow_greedy = true)]
+    #[regex(r#"""""[^*]*\*+(?:[^"*][^*]*\*+)*"""|'''[^*]*\*+(?:[^'*][^*]*\*+)*'''|""""""|''''''"#, allow_greedy = true)]
     Comment,
 
+    // --- Hex Colors (CSS / Configs) ---
+    #[regex(r"#[0-9a-fA-F]{3}(?:[0-9a-fA-F]{3})?")]
+    HexColor,
+
     // --- Strings & Interpolation ---
-    // The \n is excluded here so unclosed quotes don't eat the whole file
     #[regex(r#""([^"\\\n]|\\.)*""#)]
     #[regex(r#"'([^'\\\n]|\\.)*'"#)]
     #[regex(r#"`([^`\\]|\\.)*`"#)] // Backticks remain greedy for multi-line strings
