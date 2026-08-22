@@ -16,27 +16,29 @@ pub enum CodeToken {
     #[regex(r"\r?\n")]
     Newline,
 
-    // --- Hex Colors (must win over generic '#' comment/interpolation rules) ---
+    // --- Hex Colors (must win over the generic '#' comment rule) ---
     #[regex(r"#[0-9a-fA-F]{3}(?:[0-9a-fA-F]{3})?", priority = 20)]
     HexColor,
 
     // --- Comments & Multi-line Docstrings (Forced High Priority) ---
+    // NOTE: logos compiles regexes to a DFA and does NOT support lazy/non-greedy
+    // quantifiers (`*?`) the way PCRE does — they're effectively treated as greedy.
+    // A naive `"""[\s\S]*?"""` will therefore match from the FIRST `"""` all the
+    // way to the LAST `"""` anywhere later in the source. Instead we express
+    // "don't allow three quotes in a row" directly, which forces termination at
+    // the first real closing `"""` without needing laziness.
     #[regex(r#"//[^\r\n]*"#, allow_greedy = true)]
     #[regex(r#"/\*[^*]*\*+([^/*][^*]*\*+)*/"#, allow_greedy = true)]
     #[regex(r#"#[^!\r\n][^\r\n]*"#, priority = 2, allow_greedy = true)]
     #[regex(r#"<!--(?:[^-]|-[^-]|--[^>])*-->"#, allow_greedy = true)]
-    #[regex(r#""""[\s\S]*?"""|'''[\s\S]*?'''"#, priority = 10)]
+    #[regex(r#""""(?:[^"]|"[^"]|""[^"])*"""|'''(?:[^']|'[^']|''[^'])*'''"#, priority = 10)]
     Comment,
 
-    // --- Strings & Interpolation ---
+    // --- Strings ---
     #[regex(r#""([^"\\\n]|\\.)*""#)]
     #[regex(r#"'([^'\\\n]|\\.)*'"#)]
     #[regex(r#"`([^`\\]|\\.)*`"#)]
     StringLiteral,
-
-    #[regex(r#"\$[a-zA-Z_][a-zA-Z0-9_]*"#)]
-    #[regex(r#"#\{[^}]+\}"#, priority = 15)]
-    Interpolation,
 
     // --- Structural Declarations & Names ---
     #[token("class")]
@@ -306,5 +308,25 @@ mod tests {
         let src = "\"\"\"\nPython\nMultiline Comment\n\"\"\"";
         let toks: Vec<_> = tokenize(src).map(|t| t.token).collect();
         assert_eq!(toks, vec![Ok(CodeToken::Comment)]);
+    }
+
+    #[test]
+    fn multiple_docstrings_do_not_merge() {
+        // Regression test: a naive lazy `*?` regex would match from the first
+        // `"""` all the way to the LAST `"""` in the source, since logos
+        // doesn't support non-greedy quantifiers. This checks that two
+        // separate triple-quoted blocks stay separate.
+        let src = "\"\"\"first\"\"\"\nx\n\"\"\"second\"\"\"";
+        let toks: Vec<_> = tokenize(src).map(|t| t.token).collect();
+        assert_eq!(
+            toks,
+            vec![
+                Ok(CodeToken::Comment),
+                Ok(CodeToken::Newline),
+                Ok(CodeToken::Identifier),
+                Ok(CodeToken::Newline),
+                Ok(CodeToken::Comment),
+            ]
+        );
     }
 }
