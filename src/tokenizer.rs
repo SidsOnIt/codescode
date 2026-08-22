@@ -3,6 +3,8 @@ use logos::Logos;
 #[cfg(feature = "serde")]
 use serde::{Serialize, Deserialize};
 
+/// A generic code tokenizer that flattens disparate terminology
+/// across languages into basic, universal intent primitives.
 #[derive(Logos, Clone, Debug, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
@@ -13,16 +15,16 @@ pub enum CodeToken {
     #[regex(r"\r?\n")]
     Newline,
 
-    // --- Comments & Multi-line Docstrings (Prioritized) ---
+    // --- Comments & Multi-line Docstrings (Forced High Priority) ---
     #[regex(r#"//[^\r\n]*"#, allow_greedy = true)]
     #[regex(r#"/\*[^*]*\*+([^/*][^*]*\*+)*/"#, allow_greedy = true)]
     #[regex(r#"#[^!\r\n][^\r\n]*"#, allow_greedy = true)]
     #[regex(r#"<!--(?:[^-]|-[^-]|--[^>])*-->"#, allow_greedy = true)]
-    #[regex(r#"""""[^*]*\*+(?:[^"*][^*]*\*+)*"""|'''[^*]*\*+(?:[^'*][^*]*\*+)*'''|""""""|''''''"#, allow_greedy = true)]
+    #[regex(r#"""""[\s\S]*?"""|'''[\s\S]*?'''"#, priority = 5)]
     Comment,
 
-    // --- Hex Colors ---
-    #[regex(r"#[0-9a-fA-F]{3}(?:[0-9a-fA-F]{3})?")]
+    // --- Hex Colors (Explicit Priority over Symbols/Identifiers) ---
+    #[regex(r"#[0-9a-fA-F]{3}(?:[0-9a-fA-F]{3})?", priority = 3)]
     HexColor,
 
     // --- Strings & Interpolation ---
