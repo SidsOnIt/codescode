@@ -15,11 +15,12 @@ pub enum CodeToken {
     #[regex(r"\r?\n")] // Matches carriage returns and newlines
     Newline,
 
-    // --- Comments ---
+    // --- Comments (Including Python Triple-Quotes & HTML) ---
     #[regex(r#"//[^\r\n]*"#, allow_greedy = true)]
     #[regex(r#"/\*[^*]*\*+([^/*][^*]*\*+)*/"#, allow_greedy = true)]
     #[regex(r#"#[^!\r\n][^\r\n]*"#, allow_greedy = true)]
-    #[regex(r#"<!--[^-]*(-[^-]+)*-->"#, allow_greedy = true)] // HTML comments
+    #[regex(r#"<!--[\s\S]*?-->"#, allow_greedy = true)]
+    #[regex(r#"""""[\s\S]*?"""|'''[\s\S]*?'''"#, allow_greedy = true)]
     Comment,
 
     // --- Strings & Interpolation ---
@@ -142,6 +143,7 @@ pub enum CodeToken {
     #[token("let")]
     #[token("mut")]
     #[token("pub")]
+    #[token("public")]
     #[token("var")]
     #[token("val")]
     #[token("local")]
