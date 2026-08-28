@@ -1,56 +1,63 @@
 OPEN HONESTY LICENSE (OHL)
+Version 0.1.0
 
-Copyright (c) SidsOnIt. All rights reserved.
+The Open Honesty License gives you total freedom to use, modify, and build on this software for any purpose—provided you never invent marketing buzzwords to lie about what it is.
 
----
-**Core Permissive Statement:** Permission is granted to use, modify, and deploy this software for any purpose and in any operational context. 
-*(i) MIT-like with white-labeling or misrepresenting the underlying features under proprietary marketing names to generate sales is strictly prohibited.*
----
+Copyright (c) 2026 SidsOnIt. All rights reserved.
 
-By downloading, compiling, executing, or distributing this software, you agree to be bound by these Terms of Service (TOS). If you do not agree to these terms, you do not possess a license to utilize, modify, or host this codebase in any capacity.
+-------------------------------------------------------------------------------
+1. PERMISSION AND GRANT
+-------------------------------------------------------------------------------
+Permission is hereby granted, free of charge, to any person obtaining a copy 
+of this software and associated documentation files (the "Software"), to use, 
+copy, modify, merge, publish, distribute, sublicense, and/or sell copies of 
+the Software, subject to the conditions below.
 
-The text of this license file must be included in its entirety within all copies, forks, substantial portions, or integrated deployments of this software.
+-------------------------------------------------------------------------------
+2. CONDITIONS AND ACCURATE TERMINOLOGY
+-------------------------------------------------------------------------------
+A. ACCESSIBLE LICENSE DISPLAY: The above copyright notice and this entire 
+   license text must be included in all copies, substantial portions, or 
+   publicly hosted deployments of the Software, and made easily accessible 
+   to end-users without request.
 
----
+B. ANTI-WHITE-LABELING & ACCURATE NAMING: You may not rename, white-label, or 
+   assign proprietary marketing terms to features or functionality derived 
+   directly from this Software to imply original creation or false technical 
+   novelty.
 
-## 1. TRANSPARENCY & AUDITABILITY
-This software operates strictly under a Transparent Open Source model. The raw source code is kept completely public and visible to facilitate security auditing, community verification, privacy compliance, and educational trust.
+   You must use established, real-world industry terminology as it currently 
+   exists. Any proprietary or marketing term or phrase not recognized in formal 
+   standards published by NIST, the GDPR, or DoD-recognized certification bodies 
+   is strictly prohibited.
 
----
+   When identifying components, features, or functionality powered by this 
+   Software, you are strictly limited to:
+     i.   Referencing the Software by its original project name;
+     ii.  Using standard, objective industry terminology (e.g., "Tokenizer", 
+          "VPN", "Lexer", "Database Backend");
+     iii. Describing its functional purpose using plain, direct, and 
+          objectively verifiable language (e.g., "breaks text into parts"); or
+     iv.  Leaving the underlying implementation unnamed.
 
-## 2. GENERAL CORE ENGINE LICENSE
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files to use, modify, and integrate the underlying technology for any purpose, subject to the structural formatting, algorithmic novelty, and anti-fraud conditions outlined below.
+   All descriptions must remain objectively true, verifiable, and entirely 
+   free of marketing inflation or hype.
 
----
+-------------------------------------------------------------------------------
+3. TERMINATION
+-------------------------------------------------------------------------------
+Any failure to comply with Section 2 constitutes a material breach and 
+automatically revokes all rights granted under this License. Continued use 
+or distribution following a breach constitutes unauthorized copyright 
+infringement and false designation of origin under applicable law.
 
-## 3. THE NOVELTY THRESHOLD (THE 50% RULE)
-If you utilize this codebase to create a software tool in the same operational category, distinct and newly authored code from the licensee must comprise over 50% of the total functional feature set. 
-
-**The Rationale:** We do not believe a product that is less than 50% unique can legitimately be considered a novel invention. If you want a name on something, you need to make something. Re-packaging this core architecture with trivial variations does not earn you proprietary branding rights. 
-
-Furthermore, deceptive renaming damages the technical educational ecosystem by forcing engineers to waste time learning one real underlying term alongside five corporate lies for the exact same tool.
-
-If your independent contributions clear this 50% threshold, you may assign a unique name to your overarching application suite. However, even within a novel application, individual features derived from this source code may not be given deceptive marketing names.
-
----
-
-## 4. PROHIBITION OF FEATURE MASKING & WHITE-LABELING
-This License strictly prohibits the white-labeling, semantic masking, or deceptive renaming of features derived from this technology, whether distributed as a standalone product or integrated as a sub-feature within a larger system.
-
-### A. Accurate Feature Naming
-Renaming a feature or component powered by this project to a fabricated, proprietary marketing term (e.g., calling an underlying routing module "Lightning Direct" to imply custom architecture where none exists) is intellectually dishonest, constitutes consumer deception, and is a direct breach of this license. 
-
-### B. Use of Generic Terminology
-The use of completely generic, non-proprietary descriptors for integration touchpoints is always permitted. Features and endpoints may be labeled with raw descriptive terms (e.g., "AI Processing Backend," "Voice-to-Text Module," or "Local Network Hub") provided no false product uniqueness or proprietary invention is implied.
-
----
-
-## 5. MATERIAL BREACH, TERMINATION, AND REMEDIES
-Any distribution, modification, or deployment of this software that violates the naming, feature masking, or novelty capacity terms above constitutes an immediate and material breach of contract.
-
-Upon breach, permission to utilize, host, compile, link, or distribute this codebase is automatically, immediately, and permanently revoked. Continued distribution or usage under a deceptive or white-labeled schema will be treated as willful copyright infringement and consumer fraud, subject to immediate DMCA takedown actions across all relevant hosting infrastructure, package repositories, and digital application distribution channels.
-
----
-
-## 6. DISCLAIMER OF WARRANTY (THE "AS IS" SHIELD)
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+-------------------------------------------------------------------------------
+4. DISCLAIMER OF WARRANTY
+-------------------------------------------------------------------------------
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER 
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, 
+OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+THE SOFTWARE.
