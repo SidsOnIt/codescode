@@ -2,15 +2,19 @@
 ![Version](https://img.shields.io/badge/version-0.08.3-green) 
 `year.month.update`
 
+'version 1.0' = when the year slot of the version number contains a year such as 2026
+This will mean:
+  > The api is stable and every single character of the source code
+  is written by or reviewed by a human deeply prior to acceptance
+
 status of the project:
 
 Core Enum: Alpha, usable for testing.
 Tokenization Functions: Alpha, usable for testing.
 Tests: Ephemeral Slop, these will be totally redone scorch earth prior to 1.0
+Documentation: last task pre 1.0
 
-Working in dioxus since v0.0.2, but concrete api may change by 1.0 for ergonomics
-
-What is codescode?
+# What is codescode?
 
 a featherweight generic code tokenizer => Vec<CodeToken>
 
