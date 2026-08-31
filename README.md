@@ -1,6 +1,7 @@
 # codescode
-v0.0.3
-1.0 eta is by eoy 2026 at latest
+![Version](https://img.shields.io/badge/version-0.08.42-blue) 
+**Current Version:** `0.8.3`
+## Versioning: Year.Month.Update
 
 status of the project:
 
