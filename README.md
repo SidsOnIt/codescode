@@ -1,7 +1,6 @@
 # codescode
 ![Version](https://img.shields.io/badge/version-0.08.42-blue) 
-**Current Version:** `0.8.3`
-## Versioning: Year.Month.Update
+**Current Version:** `year.month.update`
 
 status of the project:
 
