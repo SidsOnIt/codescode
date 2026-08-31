@@ -28,16 +28,16 @@ Use Cases:
   * As a lexer for an ide ready to become an ast
 
 # Remaining goals to 1.0 / 2026.x.x
-[x] determine solution
-[x] make explicit tokens for logos
-[x] make api function
-[x] iteratively generate working regex for comments
-[x] upskill in regex
-[x] validate the regex
-[...] improve regex comments
-[ ] experiment more with the api using dioxus
-[ ] make the api ergonomic
-[ ] redo test suite
-[ ] write api doc
+- [x] determine solution
+- [x] make explicit tokens for logos
+- [x] make api function
+- [x] iteratively generate working regex for comments
+- [x] upskill in regex
+- [x] validate the regex
+- [...] improve regex comments
+- [ ] experiment more with the api using dioxus
+- [ ] make the api ergonomic
+- [ ] redo test suite
+- [ ] write api doc
 
 
