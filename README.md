@@ -1,6 +1,18 @@
 # codescode
-v0.0.2
-featherweight generic code tokenizer Vec<CodeToken>
+v0.0.3
+1.0 eta is by eoy 2026 at latest
+
+status of the project:
+
+Core Enum: Alpha, usable for testing.
+Tokenization Functions: Alpha, usable for testing.
+Tests: Ephemeral Slop, these will be totally redone scorch earth prior to 1.0
+
+Working in dioxus since v0.0.2, but concrete api may change by 1.0 for ergonomics
+
+What is codescode?
+
+a featherweight generic code tokenizer => Vec<CodeToken>
 
 portable: windows linux macos windows ios android wasm
 
