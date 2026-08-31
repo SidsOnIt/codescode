@@ -1,5 +1,5 @@
 # codescode
-![Version](https://img.shields.io/badge/version-0.08.42-blue) 
+![Version](https://img.shields.io/badge/version-0.08.3-green) 
 `year.month.update`
 
 status of the project:
