@@ -1,69 +1,77 @@
 use logos::Logos;
-//test
 
 #[cfg(feature = "serde")]
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
-/// A generic code tokenizer that flattens disparate terminology
-/// across languages into basic, universal intent primitives.
 #[derive(Logos, Clone, Debug, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
 pub enum CodeToken {
     #[regex(r"[ \t]+")]
+    // (1) or more (spaces or tabs)
     Whitespace,
 
     #[regex(r"\r?\n")]
+    // \n for posix & \r\n for windows
     Newline,
 
-    // --- Hex Colors (must win over the generic '#' comment rule) ---
     #[regex(r"#[0-9a-fA-F]{3}(?:[0-9a-fA-F]{3})?", priority = 20)]
+    // match if starts with a #, followed by (3) or (6) hex chars,
+    // if (3) => #RGB; if (6) => #RRGGBB
     HexColor,
 
-    // --- Comments & Multi-line Docstrings (Forced High Priority) ---
-    // NOTE: logos compiles regexes to a DFA and does NOT support lazy/non-greedy
-    // quantifiers (`*?`) the way PCRE does — they're effectively treated as greedy.
-    // A naive `"""[\s\S]*?"""` will therefore match from the FIRST `"""` all the
-    // way to the LAST `"""` anywhere later in the source. Instead we express
-    // "don't allow three quotes in a row" directly, which forces termination at
-    // the first real closing `"""` without needing laziness.
     #[regex(r#"//[^\r\n]*"#, allow_greedy = true)]
+    // starts with // followed by (0) or more of anything until a newline
     #[regex(r#"/\*[^*]*\*+([^/*][^*]*\*+)*/"#, allow_greedy = true)]
-    // NOTE ON THE '#' COMMENT RULE BELOW: logos resolves competing matches by
-    // LONGEST MATCH WINS — explicit `priority` only breaks ties when two
-    // candidates match the exact same length. So giving HexColor a higher
-    // priority than this rule is not enough on its own: for input like
-    // `#ff4500;`, this rule would greedily match all 9 chars (through the
-    // `;`) while HexColor can only match the 7-char `#ff4500`, and the
-    // longer match wins regardless of priority. Since every real hex color
-    // starts with a hex digit right after `#`, we instead exclude hex
-    // digits (and `!`, for shebangs) from the character allowed right after
-    // `#` here — that makes this rule structurally unable to even start a
-    // competing match at a HexColor position, so there's no race to lose.
-    // Trade-off: a `#`-comment whose very first character is a hex digit or
-    // letter a-f (e.g. `#123 fix this` with no space) won't be recognized as
-    // a comment. No sample in this corpus does that; real comments here all
-    // start with a space, `[`, or a non-hex letter right after `#`.
+    // delimitation: /* content */
+    // [^*]* = match zero or more non-asterisk characters in a row
+    // \*+ = consume 1 or more consecutive * chars
+    // ( content )* run the following (0) or more times
+    // ---> [^/*] = match (1) non-asterisk non-/ character
+    // ---> [^*]* = match zero or more non-asterisk characters in a row
+    // ---> \*+ = consume 1 or more consecutive * chars
     #[regex(r#"#[^!0-9a-fA-F\r\n][^\r\n]*"#, priority = 2, allow_greedy = true)]
+    // delimitation: # content \n
+    // #[^!0-9a-fA-F\r\n] = match # followed by any single non ! or hex char
+    // [^\r\n]* = match on (0) or more chars until a newline,
     #[regex(r#"<!--(?:[^-]|-[^-]|--[^>])*-->"#, allow_greedy = true)]
-    #[regex(r#""""(?:[^"]|"[^"]|""[^"])*"""|'''(?:[^']|'[^']|''[^'])*'''"#, priority = 10)]
-    // Lua/SQL/Haskell `--` line comment. Deliberately requires a space or tab
-    // immediately after the second dash so it can NEVER fire on:
-    //   - CSS custom properties, e.g. `--main-color: #ff4500;` (dash glued to a letter)
-    //   - the C-family decrement operator, e.g. `i--;` (dash glued to punctuation)
-    // Real `--` comments in the corpus always have a space/tab before the text
-    // (e.g. "-- Lua Single"), so this loses no real matches while staying safe.
+    // delimitation: <!-- content -->
+    // any number of chars where:
+    // ---> not a -
+    // ---> OR
+    // ---> a - followed by a non - char
+    // ---> OR
+    // ---> a -- not followed by >
+    #[regex(
+        r#""""(?:[^"]|"[^"]|""[^"])*"""|'''(?:[^']|'[^']|''[^'])*'''"#,
+        priority = 10
+    )]
+    // delimitation: """content""" or '''content'''
+    // each main branch filters for the following:
+    // not a "
+    // OR
+    // a " not followed by another "
+    // OR
+    // a "" not followed by another "
     #[regex(r"--[ \t][^\r\n]*", priority = 6, allow_greedy = true)]
-    // Lua's `--[[ ... ]]` block comment. Uses the same "don't allow the closer
-    // to appear inside the body" trick as the triple-quote docstring rule above,
-    // since logos can't do lazy `*?` matching to find the *nearest* `]]`.
+    // delimitation: -- content \n
+    // -- followed by a space or tab
+    // then followed by anything until a newline
     #[regex(r"--\[\[(?:[^\]]|\][^\]])*\]\]", priority = 12)]
+    // delimited as --[[ content ]],
+    // any number of chars where:
+    // ---> not a ]
+    // ---> OR
+    // ---> a ] not followed by a ]
     Comment,
 
     // --- Strings ---
     #[regex(r#""([^"\\\n]|\\.)*""#)]
+    //delimited with ", ([does not contain ", \ or \n] or does contain \withanythingrightafter) 0 or more times
     #[regex(r#"'([^'\\\n]|\\.)*'"#)]
+    //delimited with ', ([does not contain ', \ or \n] or does contain \withanythingrightafter) 0 or more times
     #[regex(r#"`([^`\\]|\\.)*`"#)]
+    //delimited with `, ([does not contain ` or \ ] or does contain \withanythingrightafter) 0 or more times
     StringLiteral,
 
     // --- Structural Declarations & Names ---
@@ -81,15 +89,18 @@ pub enum CodeToken {
     #[token("defstruct")]
     #[token("dataclass")]
     #[regex("[A-Z][a-zA-Z0-9_]*")]
+    //must start with Capital, followed by 0 or more lower or captial letters, numbers or _'s after it.
     Structure,
 
     #[regex("[a-z_][a-zA-Z0-9_]*")]
+    //must start with lower letter or _, and have 0 or more lower or captial letters, numbers or _'s after it.
     Identifier,
 
     #[token("const")]
     #[token("static")]
     #[regex("[A-Z][A-Z0-9_]+")]
-    Const,
+    //must start with capital letter, and have 1 or more captial letters, numbers or _'s after it.
+    Constant,
 
     #[token("true")]
     #[token("false")]
@@ -187,6 +198,7 @@ pub enum CodeToken {
     Declaration,
 
     #[regex("[0-9]+")]
+    // (1) or more number chars
     Number,
 
     #[token("=")]
@@ -328,9 +340,7 @@ mod tests {
         // Regression guard: the new hex-digit exclusion on the '#' comment
         // rule must not disturb the pre-existing '!' exclusion used for
         // shebang lines.
-        let toks: Vec<_> = tokenize("#!/usr/bin/env bash")
-            .map(|t| t.token)
-            .collect();
+        let toks: Vec<_> = tokenize("#!/usr/bin/env bash").map(|t| t.token).collect();
         // '!' is excluded from this rule (pre-existing behavior), so '#'
         // alone falls through to Symbol, then the rest tokenizes separately.
         // We only assert it's NOT swallowed as one Comment token here, since
