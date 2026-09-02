@@ -268,6 +268,8 @@ pub enum CodeToken {
     #[token("in")]
     #[token("like")]
     #[token("is null")]
+    #[token("</")]
+    #[token("/>")]
     Comparitor,
 
     #[token("|")]
@@ -302,8 +304,6 @@ pub enum CodeToken {
     #[token("->")]
     #[token("as")]
     #[token("alias")]
-    #[token("</")]
-    #[token("/>")]
     Assignment,
 
     #[token(".")]
