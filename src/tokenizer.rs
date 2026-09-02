@@ -302,6 +302,8 @@ pub enum CodeToken {
     #[token("->")]
     #[token("as")]
     #[token("alias")]
+    #[token("</")]
+    #[token("/>")]
     Assignment,
 
     #[token(".")]
