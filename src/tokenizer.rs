@@ -177,21 +177,6 @@ pub enum CodeToken {
     #[token("reraise")]
     Exception,
 
-    #[token("import")]
-    #[token("include")]
-    #[token("require")]
-    #[token("use")]
-    #[token("mod")]
-    #[token("crate")]
-    #[token("extern")]
-    #[token("package")]
-    #[token("namespace")]
-    #[token("using")]
-    #[token("from")]
-    #[token("export")]
-    #[token("require_once")]
-    Import,
-
     #[token("fn")]
     #[token("func")]
     #[token("function")]
@@ -231,6 +216,27 @@ pub enum CodeToken {
     #[token("**")]
     Operator,
 
+    
+    #[token("#include", priority = 6)]
+    #[token("#include_next", priority = 6)]
+    #[token("#define", priority = 6)]
+    #[token("import")]
+    #[token("include")]
+    #[token("require")]
+    #[token("require_once")]
+    #[token("require_relative")]
+    #[token("load")]
+    #[token("use")]
+    #[token("mod")]
+    #[token("crate")]
+    #[token("extern")]
+    #[token("package")]
+    #[token("namespace")]
+    #[token("using")]
+    #[token("from")]
+    #[token("export")]
+    Import,
+    
     #[token("where")]
     #[token("join")]
     #[token("on")]
