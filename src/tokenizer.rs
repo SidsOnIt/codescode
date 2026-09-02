@@ -21,8 +21,15 @@ pub enum CodeToken {
     HexColor,
 
     // --- Lifetimes ---
-    #[regex(r"'(?:[a-zA-Z_][a-zA-Z0-9_]*|_)", priority = 4)]
+    #[regex(r"'(?:[a-zA-Z_][a-zA-Z0-9_]*|_)\b(?!')", priority = 4)]
     Lifetime,
+
+    // --- Strings & Char Literals ---
+    #[regex(
+        r#""(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'|`(?:[^`\\]|\\.)*`|''[\s\S]*?''"#,
+        priority = 5
+    )]
+    StringLiteral,
 
     #[regex(r#"//[^\r\n]*"#, allow_greedy = true)]
     // starts with // followed by (0) or more of anything until a newline
@@ -68,13 +75,6 @@ pub enum CodeToken {
     // ---> OR
     // ---> a ] not followed by a ]
     Comment,
-
-    // --- Strings ---
-    #[regex(
-        r#""(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)'|`(?:[^`\\]|\\.)*`|''[\s\S]*?''"#,
-        priority = 5
-    )]
-    StringLiteral,
 
     // --- Structural Declarations & Names ---
     #[token("class")]
