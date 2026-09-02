@@ -92,7 +92,7 @@ pub enum CodeToken {
     //must start with Capital, followed by 0 or more lower or captial letters, numbers or _'s after it.
     Structure,
 
-    #[regex("[a-z_][a-zA-Z0-9_]*" priority = 1)]
+    #[regex("[a-z_][a-zA-Z0-9_]*", priority = 1)]
     //must start with lower letter or _, and have 0 or more lower or captial letters, numbers or _'s after it.
     Identifier,
 
