@@ -21,14 +21,14 @@ pub enum CodeToken {
     HexColor,
 
     // --- Lifetimes ---
-    #[regex(r"'[a-zA-Z_][a-zA-Z0-9_]*", priority = 3)]
-    #[regex(r"'_", priority = 3)]
+    #[regex(r"'(?:[a-zA-Z_][a-zA-Z0-9_]*|_)", priority = 4)]
     Lifetime,
 
-    // --- Strings ---
-    #[regex(r#""([^"\\\n]|\\.)*""#)]
-    #[regex(r#"'([^'\\\n]|\\.)*'"#)]
-    #[regex(r#"`([^`\\]|\\.)*`"#)]
+    // --- Strings & Char Literals ---
+    #[regex(
+        r#""(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'|`(?:[^`\\]|\\.)*`"#,
+        priority = 5
+    )]
     StringLiteral,
 
     #[regex(r#"//[^\r\n]*"#, allow_greedy = true)]
