@@ -1,43 +1,68 @@
 # codescode
-![Version](https://img.shields.io/badge/version-0.08.4-green) 
+![Version](https://img.shields.io/badge/version-0.9.2-green) 
 `year.month.update`
 
-'version 1.0' = when the year slot of the version number contains a year such as 2026
-This will mean:
-  > The api is stable and every single character of the source code
-  is written by or reviewed by a human deeply prior to acceptance
-
 status of the project:
-
-* Core Enum: Alpha, usable for testing.
-* Tokenization Functions: Alpha, usable for testing.
-* Tests: Ephemeral Slop, these will be totally redone scorch earth prior to 1.0
-* Documentation: last task pre 1.0
-
-* already is functional in current state
+Basically ready for v1 as of 9-2-2026, I just need to write
+out the docs.
 
 # What is codescode?
+a featherweight generic code tokenizer that flattens disparate
+language terminology into common terminology by it's intent.
 
-a featherweight generic code tokenizer => Vec<CodeToken>
+Features:
+  * Simple API
+  * Near Zero Overhead
+  * Eager and Lazy Tokenizer Funtions
 
 portable: windows linux macos windows ios android wasm
 
 Use Cases:
   * Cloud or Client Side LLM Code Pre-Tokenizer to reduce latency
-  * Rendering directly to styled_text from the collection using a match statement
+  * Rendering directly to styled text from the collection using a match statement
   * As a lexer for an ide ready to become an ast
+  
+---
 
-# Remaining goals to 1.0 / 2026.x.x
-- [x] determine solution
-- [x] make explicit tokens for logos
-- [x] make api function
-- [x] iteratively generate working regex for comments
-- [x] upskill in regex
-- [x] validate the regex
-- [x] improve regex comments
-- [ ] experiment more with the api using dioxus
-- [ ] make the api ergonomic
-- [x] redo test suite
-- [ ] write api doc
+How to use:
+Simply: a &str goes in and a Vec<CodeToken> comes out for you
+to match against.
+> I will put an eager and lazy example
+demonstrating how to use it for code formatting in dioxus.
 
+---
+NOTE: You can group multple tokens into the same render output.
+just because an option is there doesnt mean you have to use 100%
+of them.
 
+CodeToken enum variants include:
+  * Whitespace
+  * Newline
+  * HexColor (3 and 6)
+  * Comment
+  * StringLiteral
+  * Structure
+  * Identifier
+  * Constant
+  * Boolean
+  * Void
+  * Verb
+  * Action
+  * Async
+  * Exception
+  * Import
+  * Function
+  * Declaration
+  * Number
+  * Operator
+  * Condition
+  * Comparitor
+  * Concatenator
+  * Loop
+  * Colon
+  * Assignment
+  * Call
+  * Map
+  * Array
+  * Symbol
+  * Separator

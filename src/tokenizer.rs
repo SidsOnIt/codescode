@@ -15,7 +15,7 @@ pub enum CodeToken {
     // \n for posix & \r\n for windows
     Newline,
 
-    #[regex(r"#[0-9a-fA-F]{3}(?:[0-9a-fA-F]{3})?", priority = 20)]
+    #[regex(r"#[0-9a-fA-F]{3}(?:[0-9a-fA-F]{3})?", priority = 10)]
     // match if starts with a #, followed by (3) or (6) hex chars,
     // if (3) => #RGB; if (6) => #RRGGBB
     HexColor,
@@ -30,7 +30,7 @@ pub enum CodeToken {
     // ---> [^/*] = match (1) non-asterisk non-/ character
     // ---> [^*]* = match zero or more non-asterisk characters in a row
     // ---> \*+ = consume 1 or more consecutive * chars
-    #[regex(r#"#[^!0-9a-fA-F\r\n][^\r\n]*"#, priority = 2, allow_greedy = true)]
+    #[regex(r#"#[^!0-9a-fA-F\r\n][^\r\n]*"#, priority = 5, allow_greedy = true)]
     // delimitation: # content \n
     // #[^!0-9a-fA-F\r\n] = match # followed by any single non ! or hex char
     // [^\r\n]* = match on (0) or more chars until a newline,
@@ -88,17 +88,17 @@ pub enum CodeToken {
     #[token("defmodule")]
     #[token("defstruct")]
     #[token("dataclass")]
-    #[regex("[A-Z][a-zA-Z0-9_]*")]
+    #[regex("[A-Z][a-zA-Z0-9_]*", priority = 3)]
     //must start with Capital, followed by 0 or more lower or captial letters, numbers or _'s after it.
     Structure,
 
-    #[regex("[a-z_][a-zA-Z0-9_]*")]
+    #[regex("[a-z_][a-zA-Z0-9_]*" priority = 1)]
     //must start with lower letter or _, and have 0 or more lower or captial letters, numbers or _'s after it.
     Identifier,
 
     #[token("const")]
     #[token("static")]
-    #[regex("[A-Z][A-Z0-9_]+")]
+    #[regex("[A-Z][A-Z0-9_]+", priority = 2)]
     //must start with capital letter, and have 1 or more captial letters, numbers or _'s after it.
     Constant,
 
@@ -346,25 +346,29 @@ mod tests {
 
     #[test]
     fn bash_shebang_not_comment() {
-        let toks: Vec<_> = tokenize("#!/usr/bin/env bash").map(|t| t.token).collect();
+        let toks: Vec<_> = tokenize_lazy("#!/usr/bin/env bash")
+            .map(|t| t.token)
+            .collect();
         assert_ne!(toks, vec![Ok(CodeToken::Comment)]);
     }
 
     #[test]
     fn hex_color3_not_comment() {
-        let toks: Vec<_> = tokenize("#fff").map(|t| t.token).collect();
-        assert_eq!(toks, vec![Ok(CodeToken::HexColor)]);
+        let toks = tokenize("#fff");
+        assert_eq!(toks.len(), 1);
+        assert_eq!(toks[0].token, Ok(CodeToken::HexColor));
     }
 
     #[test]
     fn hex_color6_not_comment() {
-        let toks: Vec<_> = tokenize("#ffffff").map(|t| t.token).collect();
-        assert_eq!(toks, vec![Ok(CodeToken::HexColor)]);
+        let toks = tokenize("#ffffff");
+        assert_eq!(toks.len(), 1);
+        assert_eq!(toks[0].token, Ok(CodeToken::HexColor));
     }
 
     #[test]
     fn css_property_not_comment() {
-        let toks: Vec<_> = tokenize("--main-color: #ff4500;")
+        let toks: Vec<_> = tokenize_lazy("--main-color: #ff4500;")
             .map(|t| t.token)
             .filter(|t| *t != Ok(CodeToken::Whitespace))
             .collect();
@@ -385,9 +389,10 @@ mod tests {
 
     #[test]
     fn decrement_operator_not_comment() {
-        let toks: Vec<_> = tokenize("i--;").map(|t| t.token).collect();
+        let toks = tokenize("i--;");
+        let has_comment = toks.iter().any(|t| t.token == Ok(CodeToken::Comment));
         assert!(
-            !toks.contains(&Ok(CodeToken::Comment)),
+            !has_comment,
             "decrement operator was misread as a comment: {:?}",
             toks
         );
@@ -407,9 +412,10 @@ mod tests {
         ];
 
         for snippet in comment_snippets {
-            let toks: Vec<_> = tokenize(snippet).map(|t| t.token).collect();
+            let toks = tokenize(snippet);
+            let token_kinds: Vec<_> = toks.into_iter().map(|t| t.token).collect();
             assert_eq!(
-                toks,
+                token_kinds,
                 vec![Ok(CodeToken::Comment)],
                 "Failed to recognize snippet as a single Comment token: {:?}",
                 snippet
