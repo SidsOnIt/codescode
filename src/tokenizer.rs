@@ -24,13 +24,6 @@ pub enum CodeToken {
     #[regex(r"'(?:[a-zA-Z_][a-zA-Z0-9_]*|_)", priority = 4)]
     Lifetime,
 
-    // --- Strings & Char Literals ---
-    #[regex(
-        r#""(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'|`(?:[^`\\]|\\.)*`"#,
-        priority = 5
-    )]
-    StringLiteral,
-
     #[regex(r#"//[^\r\n]*"#, allow_greedy = true)]
     // starts with // followed by (0) or more of anything until a newline
     #[regex(r#"/\*[^*]*\*+([^/*][^*]*\*+)*/"#, allow_greedy = true)]
