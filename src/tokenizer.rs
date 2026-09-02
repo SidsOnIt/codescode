@@ -20,17 +20,14 @@ pub enum CodeToken {
     // if (3) => #RGB; if (6) => #RRGGBB
     HexColor,
 
-    // --- Lifetimes ---
-    #[regex(r"'(?:[a-zA-Z_][a-zA-Z0-9_]*|_)\b(?!')", priority = 4)]
+    #[regex(r"'(?:[a-zA-Z_][a-zA-Z0-9_]*|_)", priority = 4)]
     Lifetime,
 
-    // --- Strings & Char Literals ---
     #[regex(
-        r#""(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'|`(?:[^`\\]|\\.)*`|''[\s\S]*?''"#,
+        r#""(?:[^"\\\n]|\\.)*"|'(?:\\.|[^'\\\n]{2,}|[^'a-zA-Z_\r\n])'|`(?:[^`\\]|\\.)*`|''[\s\S]*?''"#,
         priority = 5
     )]
     StringLiteral,
-
     #[regex(r#"//[^\r\n]*"#, allow_greedy = true)]
     // starts with // followed by (0) or more of anything until a newline
     #[regex(r#"/\*[^*]*\*+([^/*][^*]*\*+)*/"#, allow_greedy = true)]
