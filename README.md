@@ -1,5 +1,5 @@
 # codescode
-![Version](https://img.shields.io/badge/version-0.08.3-green) 
+![Version](https://img.shields.io/badge/version-0.08.4-green) 
 `year.month.update`
 
 'version 1.0' = when the year slot of the version number contains a year such as 2026
@@ -34,10 +34,10 @@ Use Cases:
 - [x] iteratively generate working regex for comments
 - [x] upskill in regex
 - [x] validate the regex
-- [...] improve regex comments
+- [x] improve regex comments
 - [ ] experiment more with the api using dioxus
 - [ ] make the api ergonomic
-- [ ] redo test suite
+- [x] redo test suite
 - [ ] write api doc
 
 

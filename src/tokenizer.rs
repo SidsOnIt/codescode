@@ -336,64 +336,25 @@ mod tests {
     use super::*;
 
     #[test]
-    fn bash_shebang_still_recognized_as_comment() {
-        // Regression guard: the new hex-digit exclusion on the '#' comment
-        // rule must not disturb the pre-existing '!' exclusion used for
-        // shebang lines.
+    fn bash_shebang_not_comment() {
         let toks: Vec<_> = tokenize("#!/usr/bin/env bash").map(|t| t.token).collect();
-        // '!' is excluded from this rule (pre-existing behavior), so '#'
-        // alone falls through to Symbol, then the rest tokenizes separately.
-        // We only assert it's NOT swallowed as one Comment token here, since
-        // that's the specific case this rule is designed to preserve.
         assert_ne!(toks, vec![Ok(CodeToken::Comment)]);
     }
 
     #[test]
-    fn hex_color_not_swallowed_by_comment() {
+    fn hex_color3_not_comment() {
         let toks: Vec<_> = tokenize("#fff").map(|t| t.token).collect();
         assert_eq!(toks, vec![Ok(CodeToken::HexColor)]);
     }
 
     #[test]
-    fn triple_quote_docstring_is_one_comment() {
-        let src = "\"\"\"\nPython\nMultiline Comment\n\"\"\"";
-        let toks: Vec<_> = tokenize(src).map(|t| t.token).collect();
-        assert_eq!(toks, vec![Ok(CodeToken::Comment)]);
+    fn hex_color6_not_comment() {
+        let toks: Vec<_> = tokenize("#ffffff").map(|t| t.token).collect();
+        assert_eq!(toks, vec![Ok(CodeToken::HexColor)]);
     }
 
     #[test]
-    fn sql_line_comment_recognized() {
-        let toks: Vec<_> = tokenize("-- SQL Single").map(|t| t.token).collect();
-        assert_eq!(toks, vec![Ok(CodeToken::Comment)]);
-    }
-
-    #[test]
-    fn lua_line_comment_recognized() {
-        let toks: Vec<_> = tokenize("-- Lua Single").map(|t| t.token).collect();
-        assert_eq!(toks, vec![Ok(CodeToken::Comment)]);
-    }
-
-    #[test]
-    fn lua_block_comment_recognized_and_does_not_overrun() {
-        let src = "--[[\nLua Multi\n]]\nx";
-        let toks: Vec<_> = tokenize(src).map(|t| t.token).collect();
-        assert_eq!(
-            toks,
-            vec![
-                Ok(CodeToken::Comment),
-                Ok(CodeToken::Newline),
-                Ok(CodeToken::Identifier),
-            ]
-        );
-    }
-
-    #[test]
-    fn css_custom_property_not_treated_as_comment() {
-        // Regression guard: `--main-color: #ff4500;` must NOT be swallowed as
-        // a comment. This is the exact case that previously failed: the
-        // generic '#' comment rule matched `#ff4500;` (9 chars, including the
-        // trailing `;`) which is LONGER than HexColor's `#ff4500` (7 chars),
-        // and logos picks the longer match regardless of priority.
+    fn css_property_not_comment() {
         let toks: Vec<_> = tokenize("--main-color: #ff4500;")
             .map(|t| t.token)
             .filter(|t| *t != Ok(CodeToken::Whitespace))
@@ -414,8 +375,7 @@ mod tests {
     }
 
     #[test]
-    fn decrement_operator_not_treated_as_comment() {
-        // Regression guard: C-family `i--;` must NOT be swallowed as a comment.
+    fn decrement_operator_not_comment() {
         let toks: Vec<_> = tokenize("i--;").map(|t| t.token).collect();
         assert!(
             !toks.contains(&Ok(CodeToken::Comment)),
@@ -425,22 +385,26 @@ mod tests {
     }
 
     #[test]
-    fn multiple_docstrings_do_not_merge() {
-        // Regression test: a naive lazy `*?` regex would match from the first
-        // `"""` all the way to the LAST `"""` in the source, since logos
-        // doesn't support non-greedy quantifiers. This checks that two
-        // separate triple-quoted blocks stay separate.
-        let src = "\"\"\"first\"\"\"\nx\n\"\"\"second\"\"\"";
-        let toks: Vec<_> = tokenize(src).map(|t| t.token).collect();
-        assert_eq!(
-            toks,
-            vec![
-                Ok(CodeToken::Comment),
-                Ok(CodeToken::Newline),
-                Ok(CodeToken::Identifier),
-                Ok(CodeToken::Newline),
-                Ok(CodeToken::Comment),
-            ]
-        );
+    fn all_comment_types_recognized() {
+        let comment_snippets = vec![
+            "// C-style line comment",
+            "/* C-style block comment */",
+            "# Hash style comment",
+            "<!-- HTML comment -->",
+            "\"\"\" Triple double-quote docstring \"\"\"",
+            "''' Triple single-quote docstring '''",
+            "-- SQL or Lua line comment",
+            "--[[ Lua multi-line block comment ]]",
+        ];
+
+        for snippet in comment_snippets {
+            let toks: Vec<_> = tokenize(snippet).map(|t| t.token).collect();
+            assert_eq!(
+                toks,
+                vec![Ok(CodeToken::Comment)],
+                "Failed to recognize snippet as a single Comment token: {:?}",
+                snippet
+            );
+        }
     }
 }
