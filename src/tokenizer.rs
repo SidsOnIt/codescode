@@ -331,6 +331,7 @@ pub enum CodeToken {
     #[token("#")]
     #[token("\\")]
     #[token("<?php")]
+    #[token("'")]
     Symbol,
 
     #[token(",")]
