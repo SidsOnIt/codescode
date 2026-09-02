@@ -70,12 +70,10 @@ pub enum CodeToken {
     Comment,
 
     // --- Strings ---
-    #[regex(r#""([^"\\\n]|\\.)*""#)]
-    //delimited with ", ([does not contain ", \ or \n] or does contain \withanythingrightafter) 0 or more times
-    #[regex(r#"'([^'\\\n]|\\.)*'"#)]
-    //delimited with ', ([does not contain ', \ or \n] or does contain \withanythingrightafter) 0 or more times
-    #[regex(r#"`([^`\\]|\\.)*`"#)]
-    //delimited with `, ([does not contain ` or \ ] or does contain \withanythingrightafter) 0 or more times
+    #[regex(
+        r#""(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)'|`(?:[^`\\]|\\.)*`"#,
+        priority = 5
+    )]
     StringLiteral,
 
     // --- Structural Declarations & Names ---
