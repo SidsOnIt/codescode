@@ -71,7 +71,7 @@ pub enum CodeToken {
 
     // --- Strings ---
     #[regex(
-        r#""(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)'|`(?:[^`\\]|\\.)*`"#,
+        r#""(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)'|`(?:[^`\\]|\\.)*`|''[\s\S]*?''"#,
         priority = 5
     )]
     StringLiteral,
@@ -188,6 +188,7 @@ pub enum CodeToken {
     #[token("using")]
     #[token("from")]
     #[token("export")]
+    #[token("require_once")]
     Import,
 
     #[token("fn")]
@@ -328,6 +329,7 @@ pub enum CodeToken {
     #[token("$")]
     #[token("#")]
     #[token("\\")]
+    #[token("<?php")]
     Symbol,
 
     #[token(",")]
