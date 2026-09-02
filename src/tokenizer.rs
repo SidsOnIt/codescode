@@ -447,3 +447,9 @@ mod tests {
         }
     }
 }
+                "Failed to recognize snippet as a single Comment token: {:?}",
+                snippet
+            );
+        }
+    }
+}
