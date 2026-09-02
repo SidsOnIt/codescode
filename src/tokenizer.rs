@@ -322,13 +322,22 @@ pub struct TokenMatch<'a> {
     pub slice: &'a str,
 }
 
-pub fn tokenize(source: &str) -> impl Iterator<Item = TokenMatch<'_>> {
+// Concrete list/slice representation of tokenized source
+pub type TokenVec<'a> = Vec<TokenMatch<'a>>;
+
+// Lazy iterator for tokenizing code on demand
+pub fn tokenize_lazy(source: &str) -> impl Iterator<Item = TokenMatch<'_>> {
     CodeToken::lexer(source)
         .spanned()
         .map(move |(token, span)| TokenMatch {
             token,
             slice: &source[span],
         })
+}
+
+/// Eagerly tokenizes source text into a full contiguous vector.
+pub fn tokenize(source: &str) -> TokenVec<'_> {
+    tokenize_lazy(source).collect()
 }
 
 #[cfg(test)]
