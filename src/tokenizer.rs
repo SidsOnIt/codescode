@@ -216,7 +216,6 @@ pub enum CodeToken {
     #[token("**")]
     Operator,
 
-    
     #[token("#include", priority = 6)]
     #[token("#include_next", priority = 6)]
     #[token("#define", priority = 6)]
@@ -236,7 +235,7 @@ pub enum CodeToken {
     #[token("from")]
     #[token("export")]
     Import,
-    
+
     #[token("where")]
     #[token("join")]
     #[token("on")]
@@ -447,12 +446,6 @@ mod tests {
             assert_eq!(
                 token_kinds,
                 vec![Ok(CodeToken::Comment)],
-                "Failed to recognize snippet as a single Comment token: {:?}",
-                snippet
-            );
-        }
-    }
-}
                 "Failed to recognize snippet as a single Comment token: {:?}",
                 snippet
             );
