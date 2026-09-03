@@ -231,7 +231,11 @@ pub enum CodeToken {
     #[token("using")]
     #[token("from")]
     #[token("export")]
-    #[regex(r"#(?:include|include_next|define)\s+[^\r\n]+", priority = 10)]
+    #[regex(
+        r"#(?:include|include_next|define)\s+[^\r\n]+",
+        priority = 10,
+        allow_greedy = true
+    )]
     Import,
 
     #[token("where")]
